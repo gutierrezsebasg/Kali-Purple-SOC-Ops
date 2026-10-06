@@ -29,6 +29,10 @@ sudo tshark -i any -c 10 # Verificación de captura en vivo con 10 paquetes
 | **Volatility 3** | Respond | Clonado (GitHub) | Análisis forense de memoria RAM |
 | **UFW** | Protect | Instalado | Contención por reglas de firewall |
 
+### Evidencia de Análisis
+![](./img/tshark-evidencia.jpg)
+*Captura de 10 paquetes con `tshark -i any -c 10`. Validación de timestamp, IP origen 10.0.2.15, DNS hacia 8.8.8.8 y tráfico TCP 1514/443. Estación L1 operativa.*
+
 ### Resultado
 Estación Kali Purple L1 operativa. Binarios de Detect y Protect verificados, herramienta de Respond aprovisionada manualmente por conflicto de firmas en repos por defecto.
 
