@@ -1,28 +1,27 @@
-# Kali-Purple-SOC-Ops
-# Módulo 1: Despliegue, Auditoría y Verificación del Entorno Defensivo [Completado]
+# Kali-Purple-SOC-Ops - Suite Defensiva SOC L1 (Kali Purple)
 
-## 1. Objetivo Práctico
-Auditar la suite defensiva de Kali Purple, resolver dependencias faltantes y dejar la estación L1 operativa para inspección de tráfico.
+Este repositorio es la continuación operativa de **Linux-SOC-Labs**. Aquí documento el despliegue y uso de la suite defensiva de **Kali Purple** orientado al rol de **SOC Analyst L1 / Blue Team**. Enfocado en Detect, Protect y Respond.
 
-## 2. Auditoría y Aprovisionamiento de Binarios Defensivos
+**Entorno:** Kali Purple en VirtualBox | **Lenguaje:** Shell (Bash) / Python | **Repo base:** [Linux-SOC-Labs](https://github.com/gutierrezsebasg/Linux-SOC-Labs)
 
-**Comando inicial de verificación:**
+---
+
+## Módulo 1: Despliegue, Auditoría y Verificación del Entorno Defensivo [Completado]
+
+### Descripción General
+Auditoría de la suite defensiva de Kali Purple, resolución de dependencias faltantes y validación de captura en vivo para dejar la estación L1 operativa para inspección de tráfico.
+
+### Comandos y Herramientas Utilizadas
 ```bash
-which tshark tcpdump ufw
+which tshark tcpdump ufw # Verifica binarios defensivos disponibles
+sudo apt update # Actualiza índices de paquetes
+sudo apt install ufw -y # Instalación de firewall para fase Protect
+git clone https://github.com/volatilityfoundation/volatility3.git # Despliegue forense para fase Respond
+cd volatility3 && python3 vol.py --help # Verifica despliegue de Volatility 3
+sudo tshark -i any -c 10 # Verificación de captura en vivo con 10 paquetes
 ```
-Al detectar herramientas faltantes y conflictos de firmas en los repositorios por defecto, procedemos con el aprovisionamiento manual
 
-**Instalación de Firewall (Protect):**
-```bash
-sudo apt update
-sudo apt install ufw -y
-```
-**Despliegue Forense Volatility 3 (Respond):**
-```bash
-git clone https://github.com/volatilityfoundation/volatility3.git
-cd volatility3
-python3 vol.py --help
-```
+### Matriz de Herramientas Auditadas
 | Herramienta | Categoría NIST | Estado | Uso SOC L1 |
 | :--- | :--- | :--- | :--- |
 | **Tshark** | Detect | Verificado | Inspección y filtrado de.pcap |
@@ -30,11 +29,7 @@ python3 vol.py --help
 | **Volatility 3** | Respond | Clonado (GitHub) | Análisis forense de memoria RAM |
 | **UFW** | Protect | Instalado | Contención por reglas de firewall |
 
-## 3. Verificación de Captura en Vivo (Tshark)
+### Resultado
+Estación Kali Purple L1 operativa. Binarios de Detect y Protect verificados, herramienta de Respond aprovisionada manualmente por conflicto de firmas en repos por defecto.
 
-**Prueba de monitoreo:**
-```bash
-sudo tshark -i any -c 10
-```
-Resultado:
-Captura de 10 paquetes validada con tráfico web real. Se verificó timestamp, IP origen/destino y protocolo. Estación L1 operativa para análisis de tráfico.
+---
