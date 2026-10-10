@@ -60,7 +60,7 @@ tcpdump -A -nn -r captura_modulo2.pcap 'tcp port 80' # Inspeccion en texto claro
 
 ### Evidencia de Analisis
 ![](./img/tcpdump.evidencia.jpg)
-Inspeccion del archivo `.pcap` en terminal. Al final se ejecuto el comando para verificar y validar los 13 paquetes capturados, confirmando el flujo completo de red y la peticion con el User-Agent simulado.
+Inspeccion del archivo .pcap en terminal. Al final se ejecuto el comando para verificar y validar los 13 paquetes capturados, confirmando el flujo completo de red y la peticion con el User-Agent simulado.
 
 ### Resultado
 Me costó al principio porque tcpdump no capturaba nada y era un error de la terminal, después con el -A ya pude ver el User-Agent en claro. Se logró capturar, guardar e inspeccionar trafico real y generar el .pcap como evidencia.
