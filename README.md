@@ -44,7 +44,7 @@ Se realiza una captura y analisis de trafico HTTP utilizando `tcpdump`, con el f
 ### Comandos Utilizados
 ```bash
 sudo tcpdump -i eth0 -w captura_modulo2.pcap 'tcp port 80' # Captura y guardado de trafico en archivo pcap
-curl -A "Nikto-Test-SOC" [http://httpbin.org/get](http://httpbin.org/get) # Generacion de peticion HTTP con User-Agent personalizado
+curl -A "Nikto-Test-SOC" http://httpbin.org/get # Generacion de peticion HTTP con User-Agent personalizado en segunda pestaña
 tcpdump -nn -r captura_modulo2.pcap # Lectura del archivo de captura
 tcpdump -nn -r captura_modulo2.pcap 'tcp port 80 and (((ip[20:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)' # Filtrado de paquetes con payload
 tcpdump -A -nn -r captura_modulo2.pcap 'tcp port 80' # Inspeccion en texto claro de las cabeceras
@@ -53,13 +53,14 @@ tcpdump -A -nn -r captura_modulo2.pcap 'tcp port 80' # Inspeccion en texto claro
 
 | Evento / Paquete | Flags / Estado | Descripcion Tecnica |
 | :--- | :--- | :--- |
-| **Inicio de sesion** | `[S]`, `[S.]`, `[.]` | Establecimiento de conexion mediante el handshake TCP. |
+| **Inicio de sesion** | `[S]`, `[S.]`, `[.]` | handshake normal, syn syn-ack ack. |
 | **Peticion HTTP** | `[P.]` | Envio de la solicitud `GET` con la cabecera `User-Agent: Nikto-Test-SOC`. |
 | **Respuesta** | `[P.]` (200 OK) | Respuesta del servidor entregando el contenido en formato JSON. |
 | **Cierre** | `[F.]`, `[.]` | Terminacion ordenada de la sesion TCP. |
 
 ### Evidencia de Analisis
+![](./img/tcpdump.evidencia.jpg)
 Inspeccion del archivo `.pcap` en terminal. Al final se ejecuto el comando para verificar y validar los 13 paquetes capturados, confirmando el flujo completo de red y la peticion con el User-Agent simulado.
 
 ### Resultado
-Practica completada. Se logro capturar, guardar e inspeccionar trafico de red real en la terminal, generando el archivo `.pcap` como evidencia para el repositorio del laboratorio.
+Me costó al principio porque tcpdump no capturaba nada y era un error de la terminal, después con el -A ya pude ver el User-Agent en claro. Se logró capturar, guardar e inspeccionar trafico real y generar el .pcap como evidencia.
