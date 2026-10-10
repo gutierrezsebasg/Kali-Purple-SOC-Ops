@@ -36,4 +36,30 @@ sudo tshark -i any -c 10 # Verificación de captura en vivo con 10 paquetes
 ### Resultado
 Estación Kali Purple L1 operativa. Binarios de Detect y Protect verificados, herramienta de Respond aprovisionada manualmente por conflicto de firmas en repos por defecto.
 
----
+## Modulo 2: Analisis de Trafico de Red
+
+### Descripcion General
+Se realiza una captura y analisis de trafico HTTP utilizando `tcpdump`, con el fin de revisar el comportamiento de una peticion web y el uso de un User-Agent simulado.
+
+### Comandos Utilizados
+```bash
+sudo tcpdump -i eth0 -w captura_modulo2.pcap 'tcp port 80' # Captura y guardado de trafico en archivo pcap
+curl -A "Nikto-Test-SOC" [http://httpbin.org/get](http://httpbin.org/get) # Generacion de peticion HTTP con User-Agent personalizado
+tcpdump -nn -r captura_modulo2.pcap # Lectura del archivo de captura
+tcpdump -nn -r captura_modulo2.pcap 'tcp port 80 and (((ip[20:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)' # Filtrado de paquetes con payload
+tcpdump -A -nn -r captura_modulo2.pcap 'tcp port 80' # Inspeccion en texto claro de las cabeceras
+```
+### Secuencia de Paquetes y Trazabilidad
+
+| Evento / Paquete | Flags / Estado | Descripcion Tecnica |
+| :--- | :--- | :--- |
+| **Inicio de sesion** | `[S]`, `[S.]`, `[.]` | Establecimiento de conexion mediante el handshake TCP. |
+| **Peticion HTTP** | `[P.]` | Envio de la solicitud `GET` con la cabecera `User-Agent: Nikto-Test-SOC`. |
+| **Respuesta** | `[P.]` (200 OK) | Respuesta del servidor entregando el contenido en formato JSON. |
+| **Cierre** | `[F.]`, `[.]` | Terminacion ordenada de la sesion TCP. |
+
+### Evidencia de Analisis
+Inspeccion del archivo `.pcap` en terminal. Al final se ejecuto el comando para verificar y validar los 13 paquetes capturados, confirmando el flujo completo de red y la peticion con el User-Agent simulado.
+
+### Resultado
+Practica completada. Se logro capturar, guardar e inspeccionar trafico de red real en la terminal, generando el archivo `.pcap` como evidencia para el repositorio del laboratorio.
