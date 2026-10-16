@@ -78,7 +78,7 @@ Armé un entorno virtual en Python dentro de la carpeta de trabajo para aislar l
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install setuptools
+pip install setuptools sigmatools
 ```
 ### 2. Traducción de Reglas con Sigmac
 Usé `sigmac` para transformar una regla en formato YAML (`regla_prueba.yml`) enfocada en detectar comandos de post-explotación, a un formato ejecutable en terminal:
