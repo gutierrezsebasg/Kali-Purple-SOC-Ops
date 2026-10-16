@@ -100,5 +100,5 @@ Luego ejecuté el filtro generado para validar la detección:
 grep -P -i '^(?:.*.*cat /etc/passwd.*|.*.*uname -a.*|.*.*id.*)' tus_logs.txt
 ```
 ### Evidencia
-
+![](./img/evidencia-sigma.jpg)
 Validación exitosa del entorno, conversión de la regla Sigma y filtrado correcto de comandos sospechosos en terminal.
