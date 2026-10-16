@@ -64,3 +64,41 @@ Inspeccion del archivo .pcap en terminal. Al final se ejecuto el comando para ve
 
 ### Resultado
 Me costó al principio porque tcpdump no capturaba nada y era un error de la terminal, después con el -A ya pude ver el User-Agent en claro. Se logró capturar, guardar e inspeccionar trafico real y generar el .pcap como evidencia.
+
+## Módulo 3: Análisis de Amenazas, Logs & Reglas Defensivas
+
+### Descripción
+En este módulo trabajé en la creación y traducción de reglas de detección utilizando Sigma para estandarizar la lógica de seguridad fuera de un SIEM comercial. Resolviendo problemas de dependencias en Python y validando la efectividad de las reglas mediante la conversión a patrones de búsqueda en terminal.
+
+---
+
+### 1. Configuración del Entorno
+Armé un entorno virtual en Python dentro de la carpeta de trabajo para aislar las dependencias de `sigmatools` y evitar conflictos con paquetes descontinuados:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install setuptools
+```
+### 2. Traducción de Reglas con Sigmac
+Usé `sigmac` para transformar una regla en formato YAML (`regla_prueba.yml`) enfocada en detectar comandos de post-explotación, a un formato ejecutable en terminal:
+
+```bash
+sigmac -t grep regla_prueba.yml
+```
+La herramienta generó el siguiente patrón basado en expresiones regulares:
+```bash
+grep -P -i '^(?:.*.*cat /etc/passwd.*|.*.*uname -a.*|.*.*id.*)'
+```
+### 3. Pruebas y Validación de Detección
+Para comprobar que la regla funcionaba en un entorno real, creé un archivo de logs de prueba con líneas normales y comandos maliciosos simulados:
+```bash
+echo -e "usuario ejecutando cat /etc/passwd\noperacion normal\nuname -a ejecutado" > tus_logs.txt
+```
+Luego ejecuté el filtro generado para validar la detección:
+```bash
+grep -P -i '^(?:.*.*cat /etc/passwd.*|.*.*uname -a.*|.*.*id.*)' tus_logs.txt
+```
+### Evidencia
+
+Validación exitosa del entorno, conversión de la regla Sigma y filtrado correcto de comandos sospechosos en terminal.
