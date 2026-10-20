@@ -19,7 +19,8 @@ Este repositorio es la continuación operativa de **Linux-SOC-Labs**. Aquí docu
   <img src="https://img.shields.io/badge/SOC_L1-Defend_Monitor_Respond-c5a3ff" />
 </p>
 
----
+<img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/573bb79d-ea66-44ed-a584-19021d21e696" />
+
 ## Módulo 1: Despliegue, Auditoría y Verificación del Entorno [Completado]
 
 <details open>
@@ -64,7 +65,8 @@ sudo tshark -i any -c 10
 
 </details>
 
----
+<img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/fbe1f186-6bec-4ced-80c7-68825271e047" />
+
 
 ## Módulo 2: Análisis de Tráfico de Red [Completado]
 
@@ -112,7 +114,8 @@ tcpdump -A -nn -r captura_modulo2.pcap 'tcp port 80'
 
 </details>
 
----
+<img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/9740adf3-842e-490e-a636-3f2a67bb7677" />
+
 
 
 ## Módulo 3: Análisis de Amenazas, Logs & Reglas Defensivas [Completado]
@@ -166,7 +169,8 @@ grep -P -i '^(?:.*.*cat /etc/passwd.*|.*.*uname -a.*|.*.*id.*)' tus_logs.txt
 
 </details>
 
----
+<img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/bcb8a8c8-5fa7-4c7d-bed7-eba8e3ec3e3d" />
+
 
 
 ## Módulo 4: Gestión, Triage y Documentación de Incidentes SOC L1 [Completado]
@@ -228,7 +232,8 @@ Triage y documentación de 3 alertas simuladas como analista L1. Clasificación 
 
 </details>
 
----
+<img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/dfddb146-af31-4d48-b567-4fd047532b57" />
+
 
 ## Módulo 5: Playbooks de Respuesta a Incidentes y Automatización con Python (SOAR L1) [Completado]
 
@@ -310,4 +315,5 @@ if __name__ == "__main__":
 
 </details>
 
----
+<img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/8fdeffe5-92cb-4ef1-a331-e62068dfcc83" />
+
