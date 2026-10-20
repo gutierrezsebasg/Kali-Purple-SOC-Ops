@@ -4,6 +4,12 @@ Este repositorio es la continuación operativa de **Linux-SOC-Labs**. Aquí docu
 
 **Entorno:** Kali Purple en VirtualBox | **Lenguaje:** Shell (Bash) / Python | **Repo base:** [Linux-SOC-Labs](https://github.com/gutierrezsebasg/Linux-SOC-Labs)
 
+![M1](https://img.shields.io/badge/M1-Despliegue-c5a3ff?style=for-the-badge)
+![M2](https://img.shields.io/badge/M2-Tr%C3%A1fico-c5a3ff?style=for-the-badge)
+![M3](https://img.shields.io/badge/M3-Detección-c5a3ff?style=for-the-badge)
+![M4](https://img.shields.io/badge/M4-Triage-c5a3ff?style=for-the-badge)
+![M5](https://img.shields.io/badge/M5-SOAR_Automatizaci%C3%B3n-c5a3ff?style=for-the-badge)
+
 ---
 
 ## Módulo 1: Despliegue, Auditoría y Verificación del Entorno Defensivo [Completado]
