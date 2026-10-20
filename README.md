@@ -25,10 +25,10 @@ Este repositorio es la continuación operativa de **Linux-SOC-Labs**. Aquí docu
 <details open>
 <summary><b>Objetivo: Dejé mi estación L1 operativa - audité 4 herramientas y validé captura en vivo</b></summary>
 
-#### Descripción General
+### Descripción General
 Auditoría de la suite defensiva nativa de **Kali Purple**. Resolución de dependencias faltantes y validación de captura en vivo para habilitar operaciones SOC L1.
 
-#### Comandos y Herramientas Utilizadas
+### Comandos y Herramientas Utilizadas
 ```bash
 # 1. Verificación de binarios defensivos nativos
 which tshark tcpdump ufw
@@ -44,7 +44,7 @@ cd volatility3 && python3 vol.py --help
 sudo tshark -i any -c 10
 ```
 
-#### Matriz de Herramientas Auditadas
+### Matriz de Herramientas Auditadas
 | Herramienta | NIST | Estado | Uso en SOC L1 |
 | :--- | :---: | :---: | :--- |
 | **Tshark** | Detect | ![Verificado](https://img.shields.io/badge/Verificado-c5a3ff) | Inspección y filtrado de tráfico .pcap |
@@ -52,14 +52,14 @@ sudo tshark -i any -c 10
 | **Volatility 3** | Respond | ![Clonado](https://img.shields.io/badge/Clonado-c5a3ff) | Análisis forense de memoria RAM |
 | **UFW** | Protect | ![Instalado](https://img.shields.io/badge/Instalado-c5a3ff) | Contención por reglas de firewall |
 
-#### Evidencia de Análisis
+### Evidencia de Análisis
 <p align="center">
   <img src="./img/tshark-evidencia.jpg" width="85%" alt="Evidencia Tshark 10 paquetes" />
 </p>
 
 > **Validación:** Captura de 10 paquetes con `tshark -i any -c 10`. Timestamp correcto, IP origen `10.0.2.15`, resolución DNS hacia `8.8.8.8` y tráfico TCP `443`. Estación L1 operativa.
 
-#### Resultado
+### Resultado
 **Estación Kali Purple L1 operativa.** Binarios de Detect y Protect verificados. Herramienta de Respond aprovisionada manualmente por conflicto de firmas GPG en repos por defecto. Lista para Módulo 2.
 
 </details>
