@@ -169,3 +169,71 @@ Alerta por ejecución de `actualizar_firmas.ps1` en un equipo de marketing. Vali
 ### Acciones y Cierre
 * Verificado por canal oficial `#it-ops` con ticket de cambio CR-8492.
 * Cerrado como falso positivo, sin contención.
+
+## Módulo 5: Playbooks de Respuesta a Incidentes y Automatización con Python (SOAR L1)
+
+En este módulo se integró la teoría de respuesta a incidentes basada en el marco NIST con la automatización práctica utilizando scripts en Python para optimizar las funciones de un Analista SOC Level 1.
+
+### 1. Marco Teórico: Playbook IR-01 (Ataques de Fuerza Bruta SSH) - Estándar NIST SP 800-61
+
+Un Playbook es un conjunto de procedimientos estandarizados que guía a un analista SOC paso a paso para gestionar y mitigar incidentes de forma metódica.
+
+**MITRE ATT&CK:** T1110 - Brute Force
+
+1.  **Preparación:** Configuración de auditoría en `/var/log/auth.log` y verificación de reglas de firewall.
+2.  **Detección y Análisis:** Monitoreo y filtrado de eventos repetitivos `Failed password`.
+3.  **Contención:** Aislamiento de la IP de origen mediante ufw deny.
+4.  **Erradicación y Recuperación:** Auditoría de cuentas, verificación de logins exitosos desde IP maliciosa.
+5.  **Post-Incidente:** Registro en ticket y actualización de listas de bloqueo persistentes.
+
+---
+
+### 2. Automatización SOC L1 con Python (`soar_l1_responder.py`)
+
+Se desarrolló un script en Python enfocado en agilizar las fases de detección y contención. Analiza logs, extrae IPs con regex, evalúa umbral y genera el comando de mitigación sin ejecutar bloqueo automático en producción.
+
+### Log de prueba (`prueba_log.txt`)
+```text
+Oct 18 20:15:01 SOC-PC-01 sshd[1234]: Failed password for root from 192.168.1.105 port 22
+Oct 18 20:15:03 SOC-PC-01 sshd[1234]: Failed password for root from 192.168.1.105 port 22
+Oct 18 20:15:05 SOC-PC-01 sshd[1234]: Failed password for root from 192.168.1.105 port 22
+```
+
+### Código del Script
+```python
+#!/usr/bin/env python3
+import re
+import os
+from collections import Counter
+
+FAILED_AUTH_PATTERN = r"Failed password for .* from (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+UMBRAL_ALERTA = 3
+
+def analizar_logs(log_path="prueba_log.txt"):
+    if not os.path.exists(log_path):
+        print(f"[!] El archivo de log no existe.")
+        return
+    print(f"[*] Leyendo el archivo de log...")
+    with open(log_path, 'r', errors='ignore') as f:
+        contenido = f.read()
+
+    ips_encontradas = re.findall(FAILED_AUTH_PATTERN, contenido)
+    conteo_ips = Counter(ips_encontradas)
+
+    print("\n[+] Resultados del analisis:")
+    for ip, cantidad in conteo_ips.items():
+        if cantidad >= UMBRAL_ALERTA:
+            print(f"    ALERTA: IP sospechosa: {ip} ({cantidad} intentos fallidos)")
+            print(f"    [ACCION SOAR L1]: sudo ufw deny from {ip} to any")
+        else:
+            print(f"    IP en observacion: {ip} ({cantidad} intentos)")
+
+if __name__ == "__main__":
+    analizar_logs()
+```
+
+### 3. Evidencia de Ejecución
+![](./img/evidencia-python.png)
+
+### Resultado
+Playbook IR-01 documentado bajo NIST y automatizado con Python. Se demuestra capacidad de SOAR nivel L1: detección por regex, correlación por conteo y propuesta de contención.
