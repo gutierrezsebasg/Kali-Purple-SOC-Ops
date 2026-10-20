@@ -5,11 +5,11 @@
 Este repositorio es la continuación operativa de [![Linux-SOC-Labs](https://img.shields.io/badge/Linux--SOC--Labs-c5a3ff?style=flat)](https://github.com/gutierrezsebasg/Linux-SOC-Labs). Aquí documento el despliegue y uso de la suite defensiva de **Kali Purple** orientado al rol de **SOC Analyst L1 / Blue Team**. Enfocado en Detect, Protect y Respond.
 
 <p align="center">
-  <img src="https://img.shields.io/badge/M1-DESPLIEGUE-c5a3ff?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/M2-TRÁFICO-c5a3ff?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/M3-DETECCIÓN-c5a3ff?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/M4-TRIAGE-c5a3ff?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/M5-SOAR_AUTOMATIZACIÓN-c5a3ff?style=for-the-badge" />
+  <a href="#m1"><img src="https://img.shields.io/badge/M1-DESPLIEGUE-c5a3ff?style=for-the-badge" /></a>
+  <a href="#m2"><img src="https://img.shields.io/badge/M2-TRÁFICO-c5a3ff?style=for-the-badge" /></a>
+  <a href="#m3"><img src="https://img.shields.io/badge/M3-DETECCIÓN-c5a3ff?style=for-the-badge" /></a>
+  <a href="#m4"><img src="https://img.shields.io/badge/M4-TRIAGE-c5a3ff?style=for-the-badge" /></a>
+  <a href="#m5"><img src="https://img.shields.io/badge/M5-SOAR_AUTOMATIZACIÓN-c5a3ff?style=for-the-badge" /></a>
 </p>
 
 <p align="center">
@@ -21,6 +21,7 @@ Este repositorio es la continuación operativa de [![Linux-SOC-Labs](https://img
 
 <img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/573bb79d-ea66-44ed-a584-19021d21e696" />
 
+<a id="m1"></a>
 ## Módulo 1: Despliegue, Auditoría y Verificación del Entorno [Completado]
 
 <details open>
@@ -68,6 +69,7 @@ sudo tshark -i any -c 10
 <img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/fbe1f186-6bec-4ced-80c7-68825271e047" />
 
 
+<a id="m2"></a>
 ## Módulo 2: Análisis de Tráfico de Red [Completado]
 
 <details>
@@ -118,6 +120,7 @@ tcpdump -A -nn -r captura_modulo2.pcap 'tcp port 80'
 
 
 
+<a id="m3"></a>
 ## Módulo 3: Análisis de Amenazas, Logs & Reglas Defensivas [Completado]
 
 <details>
@@ -173,6 +176,7 @@ grep -P -i '^(?:.*.*cat /etc/passwd.*|.*.*uname -a.*|.*.*id.*)' tus_logs.txt
 
 
 
+<a id="m4"></a>
 ## Módulo 4: Gestión, Triage y Documentación de Incidentes SOC L1 [Completado]
 
 <details>
@@ -235,6 +239,7 @@ Triage y documentación de 3 alertas simuladas como analista L1. Clasificación 
 <img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/dfddb146-af31-4d48-b567-4fd047532b57" />
 
 
+<a id="m5"></a>
 ## Módulo 5: Playbooks de Respuesta a Incidentes y Automatización con Python (SOAR L1) [Completado]
 
 <details>
