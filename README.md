@@ -4,16 +4,22 @@
 
 Este repositorio es la continuación operativa de **Linux-SOC-Labs**. Aquí documento el despliegue y uso de la suite defensiva de **Kali Purple** orientado al rol de **SOC Analyst L1 / Blue Team**. Enfocado en Detect, Protect y Respond.
 
-**Entorno:** Kali Purple en VirtualBox | **Lenguaje:** Shell (Bash) / Python | **Repo base:** [Linux-SOC-Labs](https://github.com/gutierrezsebasg/Linux-SOC-Labs)
+<p align="center">
+  <img src="https://img.shields.io/badge/M1-DESPLIEGUE-c5a3ff?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/M2-TRÁFICO-c5a3ff?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/M3-DETECCIÓN-c5a3ff?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/M4-TRIAGE-c5a3ff?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/M5-SOAR_AUTOMATIZACIÓN-c5a3ff?style=for-the-badge" />
+</p>
 
-![M1](https://img.shields.io/badge/M1-Despliegue-c5a3ff?style=for-the-badge)
-![M2](https://img.shields.io/badge/M2-Tr%C3%A1fico-c5a3ff?style=for-the-badge)
-![M3](https://img.shields.io/badge/M3-Detección-c5a3ff?style=for-the-badge)
-![M4](https://img.shields.io/badge/M4-Triage-c5a3ff?style=for-the-badge)
-![M5](https://img.shields.io/badge/M5-SOAR_Automatizaci%C3%B3n-c5a3ff?style=for-the-badge)
+<p align="center">
+  <img src="https://img.shields.io/badge/Kali_Purple-557C94?style=flat&logo=kalilinux&logoColor=white" />
+  <img src="https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/Bash-4EAA25?style=flat&logo=gnubash&logoColor=white" />
+  <img src="https://img.shields.io/badge/SOC_L1-Defend_Monitor_Respond-c5a3ff" />
+</p>
 
 ---
-
 ## Módulo 1: Despliegue, Auditoría y Verificación del Entorno Defensivo [Completado]
 
 ### Descripción General
