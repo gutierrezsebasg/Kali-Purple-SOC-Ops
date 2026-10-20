@@ -2,7 +2,7 @@
 
 # Kali-Purple-SOC-Ops - Suite Defensiva SOC L1
 
-Este repositorio es la continuación operativa de **Linux-SOC-Labs**. Aquí documento el despliegue y uso de la suite defensiva de **Kali Purple** orientado al rol de **SOC Analyst L1 / Blue Team**. Enfocado en Detect, Protect y Respond.
+Este repositorio es la continuación operativa de [![Linux-SOC-Labs](https://img.shields.io/badge/Linux--SOC--Labs-c5a3ff?style=flat)](https://github.com/gutierrezsebasg/Linux-SOC-Labs). Aquí documento el despliegue y uso de la suite defensiva de **Kali Purple** orientado al rol de **SOC Analyst L1 / Blue Team**. Enfocado en Detect, Protect y Respond.
 
 <p align="center">
   <img src="https://img.shields.io/badge/M1-DESPLIEGUE-c5a3ff?style=for-the-badge" />
