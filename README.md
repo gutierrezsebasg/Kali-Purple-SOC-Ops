@@ -10,6 +10,7 @@ Este repositorio es la continuación operativa de [![Linux-SOC-Labs](https://img
   <a href="#m3"><img src="https://img.shields.io/badge/M3-DETECCIÓN-c5a3ff?style=for-the-badge" /></a>
   <a href="#m4"><img src="https://img.shields.io/badge/M4-TRIAGE-c5a3ff?style=for-the-badge" /></a>
   <a href="#m5"><img src="https://img.shields.io/badge/M5-SOAR_AUTOMATIZACIÓN-c5a3ff?style=for-the-badge" /></a>
+  <a href="#m6"><img src="https://img.shields.io/badge/M6-SIEM_CONSOLA-c5a3ff?style=for-the-badge" /></a>
 </p>
 
 <p align="center">
@@ -322,3 +323,81 @@ if __name__ == "__main__":
 
 <img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/8fdeffe5-92cb-4ef1-a331-e62068dfcc83" />
 
+<a id="m6"></a>
+## Módulo 6: Comando y Gestión de Operaciones en Consola SOC [Completado]
+
+<details>
+<summary><b>Objetivo: Dejé mi consola SIEM operativa - filtré 2 queries de brute force y cerré INC-2026-1023-01 como VP con bloqueo y escalamiento a L2</b></summary>
+
+### Descripción General
+Operación de la consola centralizada de **Wazuh** en Kali Purple. Dejé de revisar `/var/log/auth.log` a mano y pasé a cazar directo en la consola con campos normalizados. Ingesta de auth.log + Suricata, validación de regla 5710 y cierre del ciclo con ticket L1 documentado y enriquecido.
+
+### 1. Conceptos Fundamentales Validados en Consola
+| Concepto | Que hice en L1 |
+| :--- | :--- |
+| **Ingesta** | Validé entrada de `auth.log` y alertas Suricata/Zeek en Wazuh |
+| **Normalización** | Pasé de log crudo a campos `src_ip`, `rule.id`, `user`, `severity` |
+| **Correlación** | Agrupé 24 eventos en ventana de 30 seg para detectar patrón |
+| **Enriquecimiento** | Consulté IP externa en AbuseIPDB / OSINT - Tor Exit Node |
+| **Triaje** | Clasifiqué entre FP y VP con evidencia de autenticación exitosa |
+
+### 2. Búsqueda y Caza de Amenazas (Queries)
+```text
+# 1. Fuerza bruta SSH - Regla 5710
+rule.id: "5710" AND event.outcome: "failure"
+
+# 2. Severidad alta en puerto 22
+rule.level >= 8 AND destination.port: 22
+```
+
+### 3. Ticket de Incidente: INC-2026-1023-01
+
+| Campo | Detalle |
+| :--- | :--- |
+| **ID** | `INC-2026-1023-01` |
+| **Estado** | [Escalado L2](https://img.shields.io/badge/Escalado_L2-ffa500) |
+| **Analista** | `@gutierrezsebasg` - SOC L1 |
+| **Fecha** | `2026-10-23` |
+| **Severidad** | [ALTA Nivel 8](https://img.shields.io/badge/ALTA_Nivel_8-ff6b6b) |
+
+**A. Resumen de la Alerta**
+- **Regla:** `5710 - SSH brute force success detection`
+- **IP Origen:** `185.220.101.5` - Externa, Tor Exit Node
+- **Host Afectado:** `srv-db-prod-01` (`192.168.10.50`)
+- **Usuario Impactado:** `root`
+
+**B. Hallazgos del Triaje**
+```text
+2026-10-23T... srv-db-prod-01 sshd: 24 intentos fallidos en 30s desde 185.220.101.5
+2026-10-23T... srv-db-prod-01 sshd: Accepted password for root from 185.220.101.5
+OSINT: 185.220.101.5 reportada con alto índice de actividad maliciosa - Tor Exit
+```
+> La consola reportó 24 fallos y luego un `Accepted` para root. Ahí se confirmó el compromiso.
+
+**C. Acciones de Contención Ejecutadas**
+1. Bloqueo de IP en firewall: `sudo ufw deny from 185.220.101.5 to any`
+2. Cierre preventivo de sesión activa de `root`
+3. Notificación a L2 para forense en `srv-db-prod-01`
+
+**D. Veredicto y Clasificación**
+- **Clasificación:** [VP Verdadero Positivo](https://img.shields.io/badge/VP_Verdadero_Positivo-ff6b6b) - Incident
+- **Causa Raíz:** Compromiso de cuenta por fuerza bruta exitosa. Credencial de `root` expuesta.
+
+### Matriz de Herramientas Auditadas
+| Herramienta | NIST | Estado | Uso en SOC L1 |
+| :--- | :---: | :--- | :--- |
+| **Wazuh SIEM** | Detect | [Operativo](https://img.shields.io/badge/Operativo-c5a3ff) | Consola centralizada, regla 5710 |
+| **WQL / Query** | Detect | [Validado](https://img.shields.io/badge/Validado-c5a3ff) | Filtrado `rule.id` y `rule.level` |
+| **AbuseIPDB / OSINT** | Respond | [Consultado](https://img.shields.io/badge/Consultado-c5a3ff) | Validación Tor Exit Node |
+
+### Evidencia de Análisis
+> **Evidencia temporal sin captura:** Logs correlacionados en consola Wazuh + queries WQL aplicadas sobre `srv-db-prod-01`. Validación de 24 eventos `failure` + 1 `success` para root. Captura de consola pendiente de lab - documentado por CLI para no inventar screenshot.
+
+> **Validación:** 24 eventos de `failure` correlacionados en 30 segundos + 1 `success` para root. IP 185.220.101.5 validada como Tor Exit con OSINT. Tuve que ajustar query de `rule.level` porque no pintaba severidad hasta filtrar por puerto 22.
+
+### Resultado
+**Consola SIEM y ticket L1 cerrados.** Dejé la caza operativa sin grep manual, validé correlación de la regla 5710 y documenté INC-2026-1023-01 como VP con bloqueo y escalamiento a L2. Ciclo completo Detect -> Triage -> Contain listo.
+
+</details>
+
+<img width="800" height="4" alt="linea morada" src="https://github.com/user-attachments/assets/8fdeffe5-92cb-4ef1-a331-e62068dfcc83" />
