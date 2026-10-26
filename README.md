@@ -466,3 +466,5 @@ whois 185.220.101.5 | grep -i org
 **IoC enriquecido y cerrado.** Dejé de bloquear IP a ciegas y pasé a validar por CLI y OSINT. Confirmé que `185.220.101.5` es Tor Exit con 100% de abuso y 5.7k reportes. Ticket INC-2026-1023-01 queda con evidencia externa y criterio de bloqueo permanente. Flujo Threat Intel L1 operativo.
 
 </details>
+
+<img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/9740adf3-842e-490e-a636-3f2a67bb7677" />
