@@ -11,6 +11,7 @@ Este repositorio es la continuación operativa de [![Linux-SOC-Labs](https://img
   <a href="#m4"><img src="https://img.shields.io/badge/M4-TRIAGE-c5a3ff?style=for-the-badge" /></a>
   <a href="#m5"><img src="https://img.shields.io/badge/M5-SOAR_AUTOMATIZACIÓN-c5a3ff?style=for-the-badge" /></a>
   <a href="#m6"><img src="https://img.shields.io/badge/M6-SIEM_CONSOLA-c5a3ff?style=for-the-badge" /></a>
+  <a href="#m7"><img src="https://img.shields.io/badge/M7-THREAT_INTEL-c5a3ff?style=for-the-badge" /></a>
 </p>
 
 <p align="center">
@@ -355,10 +356,10 @@ rule.level >= 8 AND destination.port: 22
 | Campo | Detalle |
 | :--- | :--- |
 | **ID** | `INC-2026-1023-01` |
-| **Estado** | [Escalado L2](https://img.shields.io/badge/Escalado_L2-ffa500) |
+| **Estado** | ![Escalado L2](https://img.shields.io/badge/Escalado_L2-ffa500) |
 | **Analista** | `@gutierrezsebasg` - SOC L1 |
 | **Fecha** | `2026-10-23` |
-| **Severidad** | [ALTA Nivel 8](https://img.shields.io/badge/ALTA_Nivel_8-ff6b6b) |
+| **Severidad** | ![ALTA Nivel 8](https://img.shields.io/badge/ALTA_Nivel_8-ff6b6b) |
 
 **A. Resumen de la Alerta**
 - **Regla:** `5710 - SSH brute force success detection`
@@ -380,15 +381,15 @@ OSINT: 185.220.101.5 reportada con alto índice de actividad maliciosa - Tor Exi
 3. Notificación a L2 para forense en `srv-db-prod-01`
 
 **D. Veredicto y Clasificación**
-- **Clasificación:** [VP Verdadero Positivo](https://img.shields.io/badge/VP_Verdadero_Positivo-ff6b6b) - Incident
+- **Clasificación:** ![VP Verdadero Positivo](https://img.shields.io/badge/VP_Verdadero_Positivo-ff6b6b) - Incident
 - **Causa Raíz:** Compromiso de cuenta por fuerza bruta exitosa. Credencial de `root` expuesta.
 
 ### Matriz de Herramientas Auditadas
 | Herramienta | NIST | Estado | Uso en SOC L1 |
 | :--- | :---: | :--- | :--- |
-| **Wazuh SIEM** | Detect | [Operativo](https://img.shields.io/badge/Operativo-c5a3ff) | Consola centralizada, regla 5710 |
-| **WQL / Query** | Detect | [Validado](https://img.shields.io/badge/Validado-c5a3ff) | Filtrado `rule.id` y `rule.level` |
-| **AbuseIPDB / OSINT** | Respond | [Consultado](https://img.shields.io/badge/Consultado-c5a3ff) | Validación Tor Exit Node |
+| **Wazuh SIEM** | Detect | ![Operativo](https://img.shields.io/badge/Operativo-c5a3ff) | Consola centralizada, regla 5710 |
+| **WQL / Query** | Detect | ![Validado](https://img.shields.io/badge/Validado-c5a3ff) | Filtrado `rule.id` y `rule.level` |
+| **AbuseIPDB / OSINT** | Respond | ![Consultado](https://img.shields.io/badge/Consultado-c5a3ff) | Validación Tor Exit Node |
 
 ### Evidencia de Análisis
 > **Evidencia temporal sin captura:** Logs correlacionados en consola Wazuh + queries WQL aplicadas sobre `srv-db-prod-01`. Validación de 24 eventos `failure` + 1 `success` para root. Captura de consola pendiente de lab - documentado por CLI para no inventar screenshot.
@@ -401,3 +402,67 @@ OSINT: 185.220.101.5 reportada con alto índice de actividad maliciosa - Tor Exi
 </details>
 
 <img width="800" height="4" alt="linea morada" src="https://github.com/user-attachments/assets/8fdeffe5-92cb-4ef1-a331-e62068dfcc83" />
+
+<a id="m7"></a>
+## Módulo 7: Threat Intelligence y Enriquecimiento OSINT [Completado]
+
+<details>
+<summary><b>Objetivo: Dejé mi enriquecimiento OSINT operativo - investigué IP 185.220.101.5 por CLI y validé 100% abuso en AbuseIPDB</b></summary>
+
+### Descripción General
+Investigación de IoC sacado directo de la consola del SIEM del M6. No me quedé con el bloqueo nomas, fui a validar por CLI si era Tor y qué reputación tenía afuera. Enriquecimiento real de L1 para que el ticket INC-2026-1023-01 no quede solo con log interno.
+
+### 1. Análisis de IoC
+| Indicador | Detalle |
+| :--- | :--- |
+| **IP Analizada** | `185.220.101.5` |
+| **Contexto** | Fuerza bruta SSH - Regla 5710 - 24 intentos en 30s |
+| **Origen ticket** | `INC-2026-1023-01` - `srv-db-prod-01` |
+
+### 2. Comandos y Herramientas Utilizadas
+```bash
+# 1. Resolución DNS inversa por CLI
+dig -x 185.220.101.5 +short
+
+# 2. Validación extra de origen
+whois 185.220.101.5 | grep -i org
+
+# 3. Consulta OSINT (AbuseIPDB)
+# Búsqueda manual en AbuseIPDB - IP checker
+```
+
+### Desglose de Hallazgos Técnicos
+| Fuente | Resultado | Que confirma |
+| :--- | :--- | :--- |
+| **dig -x** | `berlin01.tor-exit.artikel10.org.` | Tráfico proviene de nodo Tor, no usuario legítimo |
+| **AbuseIPDB** | Confidence 100% - 5.778 reportes | IP con historial masivo de abuso |
+| **WHOIS / ISP** | `Artikel10 e.V. - Alemania` | Organización conocida por operar exits Tor |
+
+### Matriz de Herramientas Auditadas
+| Herramienta | NIST | Estado | Uso en SOC L1 |
+| :--- | :---: | :--- | :--- |
+| **dig** | Detect | ![Validado](https://img.shields.io/badge/Validado-c5a3ff) | Resolución inversa IoC sin salir de terminal |
+| **AbuseIPDB** | Respond | ![Consultado](https://img.shields.io/badge/Consultado-c5a3ff) | Reputación global 100% abuso |
+| **WHOIS** | Respond | ![Validado](https://img.shields.io/badge/Validado-c5a3ff) | Validación ISP / país origen |
+
+### Evidencia de Análisis
+<p align="center">
+  <img src="./img/evidencia.osint.jpg" width="85%" alt="Evidencia Threat Intel dig + AbuseIPDB" />
+</p>
+
+> **Validación:** `dig -x 185.220.101.5 +short` devolvió `berlin01.tor-exit.artikel10.org.` Confirmé Tor Exit. AbuseIPDB con 100% confidence y 5.778 reportes previos. No era falso positivo, era Tor malicioso real.
+
+> Si no tienes la imagen aún, usa esto temporal: `Evidencia CLI: berlin01.tor-exit.artikel10.org. + AbuseIPDB 100% / 5778 reportes.`
+
+### 3. Veredicto del Analista
+
+| Campo | Detalle |
+| :--- | :--- |
+| **Clasificación** | ![VP Verdadero Positivo](https://img.shields.io/badge/VP_Verdadero_Positivo-ff6b6b) |
+| **Riesgo** | ![Crítico](https://img.shields.io/badge/Riesgo-Crítico-ff6b6b) |
+| **Acción L1** | Bloqueo perimetral validado + documentación para evitar reintentos automatizados |
+
+### Resultado
+**IoC enriquecido y cerrado.** Dejé de bloquear IP a ciegas y pasé a validar por CLI y OSINT. Confirmé que `185.220.101.5` es Tor Exit con 100% de abuso y 5.7k reportes. Ticket INC-2026-1023-01 queda con evidencia externa y criterio de bloqueo permanente. Flujo Threat Intel L1 operativo.
+
+</details>
