@@ -541,3 +541,5 @@ else:
 **Playbook de contención operativo.** Dejé de bloquear a mano y automatizé el aislamiento de la IP del INC-2026-1023-01 en `iptables` con log auditable. Ciclo completo Detect (M6) -> Enrich (M7) -> Contain Automatizado (M8) cerrado. MTTR reducido y evidencia lista para L2.
 
 </details>
+
+<img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/573bb79d-ea66-44ed-a584-19021d21e696" />
