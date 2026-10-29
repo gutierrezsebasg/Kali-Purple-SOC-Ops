@@ -12,6 +12,7 @@ Este repositorio es la continuación operativa de [![Linux-SOC-Labs](https://img
   <a href="#m5"><img src="https://img.shields.io/badge/M5-SOAR_AUTOMATIZACIÓN-c5a3ff?style=for-the-badge" /></a>
   <a href="#m6"><img src="https://img.shields.io/badge/M6-SIEM_CONSOLA-c5a3ff?style=for-the-badge" /></a>
   <a href="#m7"><img src="https://img.shields.io/badge/M7-THREAT_INTEL-c5a3ff?style=for-the-badge" /></a>
+  <a href="#m8"><img src="https://img.shields.io/badge/M8-IPTABLES_SOAR-c5a3ff?style=for-the-badge" /></a>
 </p>
 
 <p align="center">
@@ -392,7 +393,7 @@ OSINT: 185.220.101.5 reportada con alto índice de actividad maliciosa - Tor Exi
 | **AbuseIPDB / OSINT** | Respond | ![Consultado](https://img.shields.io/badge/Consultado-c5a3ff) | Validación Tor Exit Node |
 
 ### Evidencia de Análisis
-> **Evidencia temporal sin captura:** Logs correlacionados en consola Wazuh + queries WQL aplicadas sobre `srv-db-prod-01`. Validación de 24 eventos `failure` + 1 `success` para root. Captura de consola pendiente de lab - documentado por CLI para no inventar screenshot.
+> **Evidencia:** Logs correlacionados en consola Wazuh + queries WQL aplicadas sobre `srv-db-prod-01`. Validación de 24 eventos `failure` + 1 `success` para root. Documentado por CLI y enlazado con M7/M8 para no inventar screenshot de Wazuh.
 
 > **Validación:** 24 eventos de `failure` correlacionados en 30 segundos + 1 `success` para root. IP 185.220.101.5 validada como Tor Exit con OSINT. Tuve que ajustar query de `rule.level` porque no pintaba severidad hasta filtrar por puerto 22.
 
@@ -452,8 +453,6 @@ whois 185.220.101.5 | grep -i org
 
 > **Validación:** `dig -x 185.220.101.5 +short` devolvió `berlin01.tor-exit.artikel10.org.` Confirmé Tor Exit. AbuseIPDB con 100% confidence y 5.778 reportes previos. No era falso positivo, era Tor malicioso real.
 
-> Si no tienes la imagen aún, usa esto temporal: `Evidencia CLI: berlin01.tor-exit.artikel10.org. + AbuseIPDB 100% / 5778 reportes.`
-
 ### 3. Veredicto del Analista
 
 | Campo | Detalle |
@@ -468,3 +467,77 @@ whois 185.220.101.5 | grep -i org
 </details>
 
 <img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/9740adf3-842e-490e-a636-3f2a67bb7677" />
+
+<a id="m8"></a>
+## Módulo 8: Automatización de Respuesta y Reglas de Firewall (Iptables) [Completado]
+
+<details>
+<summary><b>Objetivo: Dejé mi contención automatizada operativa - bloqueé 185.220.101.5 en iptables con Python y audité en incident_response.log</b></summary>
+
+### Descripción General
+Cierre del ciclo del INC-2026-1023-01. Pasé de proponer bloqueo con UFW en M5 a ejecutarlo directo en `iptables` con script SOAR en Python. Automatización de contención con trazabilidad en log para auditoría L1.
+
+### 1. Implementación del Playbook de Contención (containment.py)
+Script que aísla el IoC validado en M7 y deja registro con timestamp para que L2 pueda auditar.
+
+```python
+import os
+import datetime
+
+# IoC validado en M6/M7 - Tor Exit Node
+target_ip = "185.220.101.5"
+
+print(f"[+] Iniciando protocolo de contención para IP: {target_ip}")
+
+# Bloqueo perimetral en cadena INPUT
+cmd_block = f"sudo iptables -A INPUT -s {target_ip} -j DROP"
+exit_code = os.system(cmd_block)
+
+if exit_code == 0:
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_entry = f"[{timestamp}] SUCCESS: IP {target_ip} bloqueada en Firewall.\n"
+    
+    with open("incident_response.log", "a") as log_file:
+        log_file.write(log_entry)
+        
+    print("[+] Contención ejecutada y registrada en incident_response.log")
+else:
+    print("[-] Error al aplicar la regla de contención.")
+```
+
+### 2. Operaciones Técnicas Validadas
+| Paso | Comando | Que valida |
+| :--- | :--- | :--- |
+| **Regla manual** | `sudo iptables -A INPUT -s 185.220.101.5 -j DROP` | Creación de regla de descarte |
+| **Automatización** | `python3 containment.py` | Bloqueo dinámico desde script SOAR |
+| **Auditoría** | `cat incident_response.log` | Registro con timestamp ISO del bloqueo |
+| **Verificación** | `sudo iptables -L INPUT --line-numbers` | Listado numerado de reglas activas |
+| **Limpieza** | `sudo iptables -D INPUT 1` | Eliminación de regla de prueba y verificación final |
+
+### Matriz de Herramientas Auditadas
+| Herramienta | NIST | Estado | Uso en SOC L1 |
+| :--- | :---: | :--- | :--- |
+| **Iptables** | Protect | ![Operativo](https://img.shields.io/badge/Operativo-c5a3ff) | Contención perimetral - cadena INPUT |
+| **Python + os** | Respond | ![Automatizado](https://img.shields.io/badge/Automatizado-c5a3ff) | Playbook SOAR - bloqueo + log |
+| **incident_response.log** | Respond | ![Auditado](https://img.shields.io/badge/Auditado-c5a3ff) | Trazabilidad de acciones L1 |
+
+### Evidencia de Análisis
+<p align="center">
+  <img src="./img/evidencia.iptables.jpg" width="85%" alt="Evidencia contención iptables + containment.py" />
+</p>
+
+> **Validación:** Regla manual creada y verificada con `--line-numbers`. Ejecución de `containment.py` con exit code 0. Log `incident_response.log` con marca `[YYYY-MM-DD HH:MM:SS] SUCCESS: IP 185.220.101.5 bloqueada`. Limpieza con `-D INPUT 1` y firewall verificado limpio. Tuve que validar numeración porque la regla se duplicaba si corría el script dos veces.
+
+### 3. Veredicto del Analista
+
+| Campo | Detalle |
+| :--- | :--- |
+| **IoC** | `185.220.101.5` - berlin01.tor-exit.artikel10.org |
+| **Estado** | ![Contención completada](https://img.shields.io/badge/Contención_completada-c5a3ff) |
+| **MTTR** | Reducido con automatización Python + iptables |
+| **Trazabilidad** | Log persistente en `incident_response.log` para auditoría |
+
+### Resultado
+**Playbook de contención operativo.** Dejé de bloquear a mano y automatizé el aislamiento de la IP del INC-2026-1023-01 en `iptables` con log auditable. Ciclo completo Detect (M6) -> Enrich (M7) -> Contain Automatizado (M8) cerrado. MTTR reducido y evidencia lista para L2.
+
+</details>
