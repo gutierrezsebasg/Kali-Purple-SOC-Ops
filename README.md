@@ -13,7 +13,7 @@ Este repositorio es la continuación operativa de [![Linux-SOC-Labs](https://img
   <a href="#m6"><img src="https://img.shields.io/badge/M6-SIEM_CONSOLA-c5a3ff?style=for-the-badge" /></a>
   <a href="#m7"><img src="https://img.shields.io/badge/M7-THREAT_INTEL-c5a3ff?style=for-the-badge" /></a>
   <a href="#m8"><img src="https://img.shields.io/badge/M8-IPTABLES_SOAR-c5a3ff?style=for-the-badge" /></a>
-  <a href="#m9"><img src="https://img.shields.io/badge/M9-DETECCION_CUSTOM-c5a3ff?style=for-the-badge" /></a>
+  <a href="#m9"><img src="https://img.shields.io/badge/M9-FIRMAS_PROPIAS-c5a3ff?style=for-the-badge" /></a>
 </p>
 
 <p align="center">
@@ -546,7 +546,7 @@ else:
 <img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/573bb79d-ea66-44ed-a584-19021d21e696" />
 
 <a id="m9"></a>
-## Módulo 9: Ingeniería de Detección Custom - Creación de Reglas Nativas en Wazuh y Suricata [Completado]
+## Módulo 9: Firmas de Detección Propias - Suricata y Wazuh [Completado]
 
 <details>
 <summary><b>Objetivo: Dejé mis reglas custom operativas - diseñé regla de red en Suricata y regla de correlación en Wazuh para 185.220.101.5</b></summary>
