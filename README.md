@@ -13,6 +13,7 @@ Este repositorio es la continuación operativa de [![Linux-SOC-Labs](https://img
   <a href="#m6"><img src="https://img.shields.io/badge/M6-SIEM_CONSOLA-c5a3ff?style=for-the-badge" /></a>
   <a href="#m7"><img src="https://img.shields.io/badge/M7-THREAT_INTEL-c5a3ff?style=for-the-badge" /></a>
   <a href="#m8"><img src="https://img.shields.io/badge/M8-IPTABLES_SOAR-c5a3ff?style=for-the-badge" /></a>
+  <a href="#m9"><img src="https://img.shields.io/badge/M9-DETECCION_CUSTOM-c5a3ff?style=for-the-badge" /></a>
 </p>
 
 <p align="center">
@@ -539,6 +540,85 @@ else:
 
 ### Resultado
 **Playbook de contención operativo.** Dejé de bloquear a mano y automatizé el aislamiento de la IP del INC-2026-1023-01 en `iptables` con log auditable. Ciclo completo Detect (M6) -> Enrich (M7) -> Contain Automatizado (M8) cerrado. MTTR reducido y evidencia lista para L2.
+
+</details>
+
+<img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/573bb79d-ea66-44ed-a584-19021d21e696" />
+
+<a id="m9"></a>
+## Módulo 9: Ingeniería de Detección Custom - Creación de Reglas Nativas en Wazuh y Suricata [Completado]
+
+<details>
+<summary><b>Objetivo: Dejé mis reglas custom operativas - diseñé regla de red en Suricata y regla de correlación en Wazuh para 185.220.101.5</b></summary>
+
+### Descripción General
+Ingeniería de detección fuera de firma de fábrica. Pasé de consumir la regla 5710 del M6 a escribir mi propia lógica defensiva para el IoC del INC-2026-1023-01. Una regla perimetral en Suricata para detectar salida hacia el nodo Tor malicioso y una regla XML en Wazuh para alertar cuando se ejecuta mi `containment.py` del M8.
+
+### 1. Regla Custom de Red (Suricata)
+Perimetral para interceptar cualquier intento TCP hacia la infra de amenaza validada en M7/M8.
+
+```text
+alert tcp any any -> 185.220.101.5 any (msg:"[SOC-L1] Custom - Trafico hacia Tor Exit malicioso INC-2026-1023-01"; flow:to_server; classtype:trojan-activity; sid:1000001; rev:1;)
+```
+
+**Que hace:**
+- `any any -> 185.220.101.5 any` = detecta si alguien de adentro intenta hablar con la IP maliciosa
+- `msg` = etiqueta custom que salta en `fast.log` de Suricata
+- `sid:1000001` = rango custom, no pisa reglas oficiales ET
+
+Donde la dejé en Kali Purple:
+```bash
+sudo nano /etc/suricata/rules/custom_rules.rules
+# Contenido: la regla de arriba
+sudo suricata -T -c /etc/suricata/suricata.yaml
+sudo systemctl restart suricata
+```
+
+### 2. Regla Custom de SIEM / Host (Wazuh)
+Correlación para detectar ejecución exitosa de mi playbook de contención. Ya no reviso `incident_response.log` a mano, Wazuh me avisa solo.
+
+```xml
+<group name="soc_custom_rules">
+  <rule id="100100" level="10">
+    <if_sid>550</if_sid>
+    <match>SUCCESS: IP 185.220.101.5 bloqueada</match>
+    <description>ALERTA SOC L1: Contencion automatizada ejecutada contra IP maliciosa - INC-2026-1023-01</description>
+  </rule>
+</group>
+```
+
+Donde la dejé:
+```bash
+sudo nano /var/ossec/etc/rules/wazuh_custom_rules.xml
+# Contenido: XML de arriba
+sudo /var/ossec/bin/wazuh-logtest
+# Prueba: pego [2026-10-28 20:08:51] SUCCESS: IP 185.220.101.5 bloqueada exitosamente en Firewall.
+sudo systemctl restart wazuh-manager
+```
+
+**Que hace:**
+- Lee `incident_response.log` ingestado como log custom
+- Si ve `SUCCESS: IP 185.220.101.5 bloqueada` dispara nivel 10
+- Queda trazable: M8 contiene -> M9 alerta automática
+
+### Matriz de Herramientas Auditadas
+| Herramienta | NIST | Estado | Uso en SOC L1 |
+| :--- | :---: | :--- | :--- |
+| **Suricata Engine** | Detect | ![Custom OK](https://img.shields.io/badge/Custom_OK-c5a3ff) | Detección perimetral sid:1000001 hacia Tor malicioso |
+| **Wazuh SIEM Rules** | Detect | ![Custom OK](https://img.shields.io/badge/Custom_OK-c5a3ff) | Correlación id:100100 sobre incident_response.log |
+| **Custom Rules** | Detect | ![Validado](https://img.shields.io/badge/Validado-c5a3ff) | Ingeniería propia fuera de firma de fábrica |
+
+### Evidencia de Análisis
+<p align="center">
+  <img src="./img/regla.custom.evidencia.jpg" width="85%" alt="Evidencia reglas custom Suricata y Wazuh" />
+</p>
+
+> **Validación:** Creación y verificación con `cat` de `custom_rules.rules` y `wazuh_custom_rules.xml`. Suricata con `suricata -T` OK. Wazuh con `wazuh-logtest` matcheando `SUCCESS: IP 185.220.101.5` y disparando level 10. Tuve que quitar `decoded_as json` porque mi `incident_response.log` es texto plano, no JSON, y corregir el `ansip` de la regla Suricata que no es campo válido.
+
+> Si no tienes captura: `Evidencia CLI: cat custom_rules.rules -> sid 1000001 + suricata -T OK + cat wazuh_custom_rules.xml -> id 100100 + wazuh-logtest match SUCCESS`
+
+### Resultado
+**Ingeniería de detección custom completada.** Dejé de consumir reglas de fábrica y escribí mi propia lógica defensiva en capa de red y en SIEM para el mismo IoC del INC-2026-1023-01. Ciclo Detect Custom -> Contain -> Alert Automatizado operativo. Ya no solo detecto, creo detección.
 
 </details>
 
