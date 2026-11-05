@@ -14,6 +14,7 @@ Este repositorio es la continuación operativa de [![Linux-SOC-Labs](https://img
   <a href="#m7"><img src="https://img.shields.io/badge/M7-THREAT_INTEL-c5a3ff?style=for-the-badge" /></a>
   <a href="#m8"><img src="https://img.shields.io/badge/M8-IPTABLES_SOAR-c5a3ff?style=for-the-badge" /></a>
   <a href="#m9"><img src="https://img.shields.io/badge/M9-FIRMAS_PROPIAS-c5a3ff?style=for-the-badge" /></a>
+  <a href="#m10"><img src="https://img.shields.io/badge/M10-CONSOLIDACIÓN-c5a3ff?style=for-the-badge" /></a>
 </p>
 
 <p align="center">
@@ -623,3 +624,72 @@ sudo systemctl restart wazuh-manager
 </details>
 
 <img width="800" height="4" alt="imagen" src="https://github.com/user-attachments/assets/573bb79d-ea66-44ed-a584-19021d21e696" />
+
+<a id="m10"></a>
+## Módulo 10: Consolidación, Repositorio y Portafolio SOC L1 [Completado]
+
+<details>
+<summary><b>Objetivo: Dejé mi suite defensiva L1 cerrada - arquitectura Detect/Respond/Protect y trazabilidad completa del INC-2026-1023-01 lista para GitHub</b></summary>
+
+### Descripción General
+Cierre de los 9 módulos en Kali Purple. Estandaricé la documentación, la navegación por badges y la arquitectura defensiva bajo NIST SP 800-61. Todo queda trazable desde el tráfico hasta la firma propia: el mismo IoC `185.220.101.5` que partió en M6 (Tor Exit), pasó por OSINT en M7, se bloqueó en M8 con `iptables` y quedó con firma propia en M9 (`sid:1000001` / `id:100100`).
+
+### Arquitectura Defensiva Integrada
+Flujo real que dejé operativo en mi estación L1:
+
+```text
+[ Trafico / Red ] ---> [ Tshark / Tcpdump / Suricata ] ---> [ Deteccion Perimetral (sid:1000001) ]
+                                                            |
+                                                            v
+[ Servidor / Host ] --> [ auth.log / Firewall / incident_response.log ] --> [ Wazuh SIEM (rule 5710 / id 100100) ]
+                                                            |
+                                                            v
+[ Enriquecimiento ] -> [ Threat Intel dig -x / OSINT AbuseIPDB ] -> [ SOAR L1 containment.py ]
+                                                            |
+                                                            v
+[ Contencion L1 ] ---> [ Iptables DROP 185.220.101.5 ] ------------> [ Log Auditoria (incident_response.log) ]
+```
+
+### Matriz Global de Competencias Demostradas
+| Dominio NIST | Herramientas | Módulos | Resultado Operativo |
+| :--- | :--- | :--- | :--- |
+| **Detect** | Tshark, Tcpdump, Sigma, Wazuh, Suricata | M1, M2, M3, M6, M9 | Captura `.pcap`, regla Sigma a Grep, queries `rule.id:5710`, firma custom `sid:1000001` |
+| **Respond** | Volatility 3, Python SOAR, dig, OSINT | M1, M4, M5, M7, M8 | Triage L1 (3 tickets), playbook SSH brute `192.168.1.105`, IoC `185.220.101.5` Tor Exit, bloqueo `containment.py` |
+| **Protect** | UFW, Iptables | M1, M8 | Contención perimetral `iptables -A INPUT -s 185.220.101.5 -j DROP` y auditoria con timestamp |
+
+### Evidencia de Análisis
+
+> **Evidencia CLI:** Repositorio estructurado con badges de navegación rápida M1-M10 color `c5a3ff`, documentación modular con `<details>` y código auditado.
+
+```bash
+# Estructura validada del portafolio
+tree -L 2
+# o
+ls -R
+
+# Output esperado:
+# ./img/
+#   banner_kali.jpg
+#   tshark-evidencia.jpg
+#   tcpdump.evidencia.jpg
+#   evidencia-sigma.jpg
+#   evidencia-python.png
+#   evidencia.osint.jpg
+#   evidencia.iptables.jpg
+#   regla.custom.evidencia.png
+# ./Modulo5/
+#   prueba_log.txt
+#   soar_l1_responder.py
+# ./Modulo8/
+#   containment.py
+#   incident_response.log
+```
+
+> **Validación:** Badges clicables M1-M10, imágenes centradas 85% en M1-M9, trazabilidad `INC-2026-1023-01` intacta de M6 a M9 y arquitectura Detect/Respond/Protect documentada sin dependencias externas.
+
+### Resultado
+**Portafolio SOC L1 completado.** Pasé de conceptos a operaciones reales documentadas en Kali Purple. Entorno y repo listos para evaluación técnica y entrevista L1. Siguiente paso que dejé planificado: repositorio diario para BTLO y proyectos de Blue Team.
+
+</details>
+
+<img width="800" height="4" alt="linea morada" src="https://github.com/user-attachments/assets/8fdeffe5-92cb-4ef1-a331-e62068dfcc83" />
